@@ -20,3 +20,5 @@ This is currently used for Colors and soon typography options.
 
 ### Backend
 Currently disconnected from front end
+
+#### Note: We have temporarily added package-lock to the .gitignore as version consistency will change during development continuously

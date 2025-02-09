@@ -4,7 +4,12 @@
     "slug": "NewsAinchor",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "splash": {
+      "image": "./assets/images/News-AInchor-Logo-Blue.png",
+      "resizeMode": "cover",
+      "backgroundColor": "#2d5286"
+    },
+    "icon": "./assets/images/News-AInchor-Logo-Blue.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -13,11 +18,11 @@
       "bundleIdentifier": "com.anonymous.NewsAinchor"
     },
     "android": {
+      "package": "com.anonymous.NewsAinchor",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      },
-      "package": "com.anonymous.NewsAinchor"
+        "foregroundImage": "./assets/images/News-AInchor-Logo-Blue.png",
+        "backgroundColor": "#2d5286"
+      }
     },
     "web": {
       "bundler": "metro",
@@ -25,16 +30,7 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      "expo-router",
-      [
-        "expo-splash-screen",
-        {
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 200,
-          "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
-        }
-      ]
+      "expo-router"
     ],
     "experiments": {
       "typedRoutes": true
