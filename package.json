@@ -1,0 +1,21 @@
+{
+  "name": "news_ainchor",
+  "version": "1.0.0",
+  "description": "News AInchor is a college-based team looking to help solve the severe problem of news avoidance in America. Our goal is to create a service to allow young Americans to obtain their news quickly, accurately, and consistently.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "expo": "^52.0.35",
+    "expo-router": "^4.0.17",
+    "react": "^18.3.1",
+    "react-native": "^0.77.1"
+  },
+  "devDependencies": {
+    "@types/react-native": "^0.73.0"
+  }
+}
