@@ -59,7 +59,7 @@ const respo = await generateNewsVideo({
 });
 // Need to figure out how long it might take or have it trigger an SNS notification when the video is ready.
 await new Promise((resolve) => setTimeout(resolve, 10 * 60 * 1000));
-const getResponse = await getNewsVideo({ videoId: respo.video_id });
+// const getResponse = await getNewsVideo({ videoId: respo.video_id });
 // const getResponse = await getNewsVideo({videoId: 'f940195501'});
 // Sample console.log(getResponse);
 // {
