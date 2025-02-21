@@ -39,7 +39,10 @@ export async function generateNewsVideo(params) {
     return apiResponse;
 }
 export async function getNewsVideo(params) {
-    const options = { method: 'GET', headers: { 'x-api-key': `${TAVUS_API_KEY}` } };
+    const options = {
+        method: 'GET',
+        headers: { 'x-api-key': `${TAVUS_API_KEY}` },
+    };
     const apiResponse = await fetch(`https://tavusapi.com/v2/videos/${params.videoId}`, options)
         .then((response) => response.json())
         .catch((err) => {
@@ -48,14 +51,31 @@ export async function getNewsVideo(params) {
     });
     return apiResponse;
 }
+// this can be used for testing (if we ever create tests)
 const demoScript = "With the All Spark gone, we cannot return life to our planet. And fate has yielded its reward: a new world to call... home. We live among its people now, hiding in plain sight... but watching over them in secret... waiting... protecting. I have witnessed their capacity for courage, and though we are worlds apart, like us, there's more to them than meets the eye. I am Optimus Prime, and I send this message to any surviving Autobots taking refuge among the stars: We are here... we are waiting.";
-// const respo = await generateNewsVideo({
-// 	deepFakeId: 'r79e1c033f',
-// 	script: demoScript,
-// });
+const respo = await generateNewsVideo({
+    deepFakeId: 'r79e1c033f',
+    script: demoScript,
+});
 // Need to figure out how long it might take or have it trigger an SNS notification when the video is ready.
-// await new Promise((resolve) => setTimeout(resolve, 10 * 60 * 1000));
-const getResponse = await getNewsVideo({ videoId: 'f940195501' });
-// console.log(respo);
-console.log(getResponse);
+await new Promise((resolve) => setTimeout(resolve, 10 * 60 * 1000));
+const getResponse = await getNewsVideo({ videoId: respo.video_id });
+// const getResponse = await getNewsVideo({videoId: 'f940195501'});
+// Sample console.log(getResponse);
+// {
+//   video_id: 'f940195501',
+//   video_name: '04_02_2025',
+//   status: 'ready',
+//   data: {
+//     script: "With the All Spark gone, we cannot return life to our planet. And fate has yielded its reward: a new world to call... home. We live among its people now, hiding in plain sight... but watching over them in secret... waiting... protecting. I have witnessed their capacity for courage, and though we are worlds apart, like us, there's more to them than meets the eye. I am Optimus Prime, and I send this message to any surviving Autobots taking refuge among the stars: We are here... we are waiting."
+//   },
+//   replica_id: 'r79e1c033f',
+//   download_url: 'https://stream.mux.com/ylqmQuaYdXzI8CIzqfYbH1ZTU2U7GJ6sEUlnW9jcyZ4/high.mp4?download=f940195501',
+//   hosted_url: 'https://tavus.video/f940195501',
+//   stream_url: 'https://stream.mux.com/ylqmQuaYdXzI8CIzqfYbH1ZTU2U7GJ6sEUlnW9jcyZ4.m3u8',
+//   status_details: 'Your request has processed successfully!',
+//   created_at: 'Wed, 05 Feb 2025 04:27:02 GMT',
+//   updated_at: 'Wed, 05 Feb 2025 04:31:06 GMT',
+//   generation_progress: '100/100'
+// }
 //# sourceMappingURL=tavus_utils.js.map

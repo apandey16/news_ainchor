@@ -58,9 +58,15 @@ export async function generateNewsVideo(params: {
 }
 
 export async function getNewsVideo(params: { videoId: string }) {
-	const options = { method: 'GET', headers: { 'x-api-key': `${TAVUS_API_KEY}` } };
+	const options = {
+		method: 'GET',
+		headers: { 'x-api-key': `${TAVUS_API_KEY}` },
+	};
 
-	const apiResponse = await fetch(`https://tavusapi.com/v2/videos/${params.videoId}`, options)
+	const apiResponse = await fetch(
+		`https://tavusapi.com/v2/videos/${params.videoId}`,
+		options,
+	)
 		.then((response) => response.json())
 		.catch((err) => {
 			console.error(err);
@@ -69,7 +75,6 @@ export async function getNewsVideo(params: { videoId: string }) {
 
 	return apiResponse;
 }
-
 
 // this can be used for testing (if we ever create tests)
 const demoScript =
@@ -82,7 +87,7 @@ const respo = await generateNewsVideo({
 
 // Need to figure out how long it might take or have it trigger an SNS notification when the video is ready.
 await new Promise((resolve) => setTimeout(resolve, 10 * 60 * 1000));
-const getResponse = await getNewsVideo({videoId: respo.video_id});
+// const getResponse = await getNewsVideo({ videoId: respo.video_id });
 // const getResponse = await getNewsVideo({videoId: 'f940195501'});
 
 // Sample console.log(getResponse);
