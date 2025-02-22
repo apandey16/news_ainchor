@@ -35,13 +35,13 @@ export async function summarizeText(text: string): Promise<string> {
 // Pass in all the summaries and get a news anchor script to pass to Tavus
 export async function generateAnchorScript(texts: string[]): Promise<string> {
 	try {
-		const combinedText = texts.join(' ');
+		const combinedText = texts.map((text, index) => `Article ${index + 1}: ${text}`).join('\n');
 		const completion = await openai.chat.completions.create({
 			model: MODEL,
 			messages: [
 				{
 					role: 'user',
-					content: `Generate a news anchor script based on the following texts: ${combinedText}`,
+					content: `Generate a news anchor script based on the following three articles: ${combinedText}`,
 				},
 			],
 		});
