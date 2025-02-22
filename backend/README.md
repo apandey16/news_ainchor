@@ -1,6 +1,6 @@
 # News AInchor -- Backend
 
-Hosted on AWS.
+Cloudflare
 
 Deepfake AI system -> Tavus API
 
@@ -10,4 +10,8 @@ Aggregator -> Newscatcher API
 
 Story Classifer -> 
 
-Article Ranking -> 
+Article Ranking ->
+
+Start dev server: npm run start
+
+Deploy: npm run deploy

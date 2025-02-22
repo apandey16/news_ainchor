@@ -54,7 +54,7 @@ export async function generateNewsVideo(params: {
 			throw new Error('Failed to generate news video');
 		});
 
-	return apiResponse;
+	return apiResponse as generationReturn;
 }
 
 export async function getNewsVideo(params: { videoId: string }) {
@@ -81,7 +81,7 @@ const demoScript =
 	"With the All Spark gone, we cannot return life to our planet. And fate has yielded its reward: a new world to call... home. We live among its people now, hiding in plain sight... but watching over them in secret... waiting... protecting. I have witnessed their capacity for courage, and though we are worlds apart, like us, there's more to them than meets the eye. I am Optimus Prime, and I send this message to any surviving Autobots taking refuge among the stars: We are here... we are waiting.";
 
 const respo = await generateNewsVideo({
-	deepFakeId: 'r79e1c033f',
+	deepFakeId: 'rdb0fe17e450',
 	script: demoScript,
 });
 

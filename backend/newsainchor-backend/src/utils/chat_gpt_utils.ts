@@ -17,7 +17,7 @@ export async function summarizeText(text: string): Promise<string> {
 		const completion = await openai.chat.completions.create({
 			model: MODEL,
 			messages: [
-				{ role: 'user', content: `Summarize the following text: ${text}` },
+				{ role: 'user', content: `Summarize the following news articles from today(ignore any HTML artifacts): ${text}` },
 			],
 		});
 
