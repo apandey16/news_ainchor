@@ -4,16 +4,14 @@ import OpenAI from 'openai';
 import * as dotenv from 'dotenv';
 dotenv.config();
 
-const CHAT_API_KEY = process.env.CHAT_API_KEY;
 const MODEL = 'gpt-4o-mini';
 
-const openai = new OpenAI({
-	apiKey: CHAT_API_KEY,
-});
-
 // Pass in the news article and get a summary for it
-export async function summarizeText(text: string): Promise<string> {
+export async function summarizeText(apiKey:string, text: string): Promise<string> {
 	try {
+		const openai = new OpenAI({
+			apiKey: apiKey,
+		});
 		const completion = await openai.chat.completions.create({
 			model: MODEL,
 			messages: [
@@ -33,15 +31,18 @@ export async function summarizeText(text: string): Promise<string> {
 }
 
 // Pass in all the summaries and get a news anchor script to pass to Tavus
-export async function generateAnchorScript(texts: string[]): Promise<string> {
+export async function generateAnchorScript(apiKey: string, texts: string[]): Promise<string> {
 	try {
+		const openai = new OpenAI({
+			apiKey: apiKey,
+		});
 		const combinedText = texts.map((text, index) => `Article ${index + 1}: ${text}`).join('\n');
 		const completion = await openai.chat.completions.create({
 			model: MODEL,
 			messages: [
 				{
 					role: 'user',
-					content: `Generate a news anchor script based on the following three articles: ${combinedText}`,
+					content: `Generate a news anchor script for a one minute tik tok style video based on the following three articles: ${combinedText}`,
 				},
 			],
 		});

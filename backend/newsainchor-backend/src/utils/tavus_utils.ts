@@ -22,11 +22,30 @@ type generationReturn = {
 	created_at: string;
 	video_name: string;
 };
+
+type VideoGenerationResponse = {
+	video_id: string;
+	video_name: string;
+	status: string;
+	data: {
+		script: string;
+	};
+	replica_id: string;
+	download_url: string;
+	hosted_url: string;
+	stream_url: string;
+	status_details: string;
+	created_at: string;
+	updated_at: string;
+	generation_progress: string;
+};
+
 // The script generation function will be in the chatGPT API utils file.
 export async function generateNewsVideo(params: {
 	deepFakeId: string;
 	script: string;
 	uniqueTitleIdentifier?: string;
+	apiKey: string;
 }): Promise<generationReturn> {
 	const title = createVideoTitle(params.uniqueTitleIdentifier);
 	console.log(title);
@@ -41,7 +60,7 @@ export async function generateNewsVideo(params: {
 	const options = {
 		method: 'POST',
 		headers: {
-			'x-api-key': `${TAVUS_API_KEY}`,
+			'x-api-key': `${params.apiKey}`,
 			'Content-Type': 'application/json',
 		},
 		body: JSON.stringify(body),
@@ -57,10 +76,10 @@ export async function generateNewsVideo(params: {
 	return apiResponse as generationReturn;
 }
 
-export async function getNewsVideo(params: { videoId: string }) {
+export async function getNewsVideo(params: { videoId: string, apiKey:string }): Promise<VideoGenerationResponse> {
 	const options = {
 		method: 'GET',
-		headers: { 'x-api-key': `${TAVUS_API_KEY}` },
+		headers: { 'x-api-key': `${params.apiKey}` },
 	};
 
 	const apiResponse = await fetch(
@@ -73,20 +92,20 @@ export async function getNewsVideo(params: { videoId: string }) {
 			throw new Error('Failed to get news video');
 		});
 
-	return apiResponse;
+	return apiResponse as VideoGenerationResponse;
 }
 
 // this can be used for testing (if we ever create tests)
 const demoScript =
 	"With the All Spark gone, we cannot return life to our planet. And fate has yielded its reward: a new world to call... home. We live among its people now, hiding in plain sight... but watching over them in secret... waiting... protecting. I have witnessed their capacity for courage, and though we are worlds apart, like us, there's more to them than meets the eye. I am Optimus Prime, and I send this message to any surviving Autobots taking refuge among the stars: We are here... we are waiting.";
 
-const respo = await generateNewsVideo({
-	deepFakeId: 'rdb0fe17e450',
-	script: demoScript,
-});
+// const respo = await generateNewsVideo({
+// 	deepFakeId: 'rdb0fe17e450',
+// 	script: demoScript,
+// });
 
 // Need to figure out how long it might take or have it trigger an SNS notification when the video is ready.
-await new Promise((resolve) => setTimeout(resolve, 10 * 60 * 1000));
+// await new Promise((resolve) => setTimeout(resolve, 10 * 60 * 1000));
 // const getResponse = await getNewsVideo({ videoId: respo.video_id });
 // const getResponse = await getNewsVideo({videoId: 'f940195501'});
 

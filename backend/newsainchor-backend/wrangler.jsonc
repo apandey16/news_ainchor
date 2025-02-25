@@ -13,7 +13,25 @@
 	},
   "vars" :{
     "DEEPFAKE_ID": "rdb0fe17e450"
-  }
+  },
+  "r2_buckets": [
+    {
+      "bucket_name": "video-storage",
+      "binding": "video_storage"
+    }
+  ],
+    "kv_namespaces": [
+      {
+        "binding": "video_date_db",
+        "id": "dbc0ba3331884804966eb848d0245ffd"
+      },
+      {
+        "binding": "article_summary",
+        "id": "4a415058fc7c43b783ab7b35f302ed7c"
+      }
+    ]
+  
+  
   /**
    * Smart Placement
    * Docs: https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
