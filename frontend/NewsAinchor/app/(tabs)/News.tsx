@@ -3,10 +3,10 @@ import { StyleSheet, Image, Platform } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 
-export default function TabThreeScreen() {
+export default function TabTwoScreen() {
   return (
       <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Settings Page</ThemedText>
+        <ThemedText type="title">This page will have a scrollable set of clickable news cards</ThemedText>
       </ThemedView>
   );
 }
