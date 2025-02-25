@@ -10,7 +10,10 @@
   "compatibility_flags": ["nodejs_compat"],
 	"observability": {
 		"enabled": true
-	},
+  },
+  "triggers": {
+    "crons": ["0 9 * * *"]
+  },
   "vars" :{
     "DEEPFAKE_ID": "rdb0fe17e450"
   },

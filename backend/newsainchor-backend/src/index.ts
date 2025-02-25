@@ -73,7 +73,7 @@ export default {
 		console.log('Video generation response:', videoGenerationResponse);
 		
 		// Need to find a better way to wait for the video to be generated
-		await new Promise(resolve => setTimeout(resolve, 5 * 60 * 1000));
+		await new Promise(resolve => setTimeout(resolve, 20 * 60 * 1000));
 		
 		const videoId = videoGenerationResponse.video_id;
 		console.log('Getting news video');

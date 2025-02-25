@@ -15,7 +15,7 @@ export async function summarizeText(apiKey:string, text: string): Promise<string
 		const completion = await openai.chat.completions.create({
 			model: MODEL,
 			messages: [
-				{ role: 'user', content: `Summarize the following news articles from today(ignore any HTML artifacts): ${text}` },
+				{ role: 'user', content: `Summarize the following news article from today (ignore any HTML artifacts): ${text}` },
 			],
 		});
 
@@ -42,7 +42,7 @@ export async function generateAnchorScript(apiKey: string, texts: string[]): Pro
 			messages: [
 				{
 					role: 'user',
-					content: `Generate a news anchor script for a one minute tik tok style video based on the following three articles: ${combinedText}`,
+					content: `Generate a news anchor script for a one minute tik-tok style video for an app called NewsAInchor. Do not include any stage directions or segment headers. It should be based on the following three articles: ${combinedText}`,
 				},
 			],
 		});
