@@ -22,8 +22,6 @@ interface ArticleDetails {
   url: string;
 }
 
-const today = new Date().toISOString().split('T')[0];
-
 async function writeToDb(key: string, value: string, db: KVNamespace) {
   try {
     await db.put(key, value);
@@ -33,6 +31,7 @@ async function writeToDb(key: string, value: string, db: KVNamespace) {
 }
 
 async function handleRequest(env: Env) {
+  const today = new Date().toISOString().split('T')[0];
   console.log('Fetching top news articles');
   const topArticlesObject = await newsApiUtils.getTopNewsArticles({
     api_token: env.THE_NEWS_API_KEY as string,
