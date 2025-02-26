@@ -31,7 +31,7 @@ export async function summarizeText(apiKey:string, text: string): Promise<string
 }
 
 // Pass in all the summaries and get a news anchor script to pass to Tavus
-export async function generateAnchorScript(apiKey: string, texts: string[]): Promise<string> {
+export async function generateAnchorScript(apiKey: string, texts: string[], date: string): Promise<string> {
 	try {
 		const openai = new OpenAI({
 			apiKey: apiKey,
@@ -42,7 +42,7 @@ export async function generateAnchorScript(apiKey: string, texts: string[]): Pro
 			messages: [
 				{
 					role: 'user',
-					content: `Generate a news anchor script for a one minute tik-tok style video for an app called NewsAInchor use some humor. Make each section short. During the introduction mention today's date. Do not include any stage directions or segment headers. It should be based on the following three articles: ${combinedText}`,
+					content: `Generate a news anchor script for a one minute tik-tok style video for an app called NewsAInchor use some humor. Make each section short. During the introduction mention today's date which is ${date} in DD-MM-YYYY format. Do not include any stage directions or segment headers or any flairs in the text like astricks. It should be based on the following three articles: ${combinedText}`,
 				},
 			],
 		});

@@ -73,7 +73,7 @@ async function handleRequest(env: Env) {
 
   await writeToDb(today, JSON.stringify(articleDetails), env.article_summary);
 
-  const anchorScript = await chatGPTApiUtils.generateAnchorScript(env.CHAT_API_KEY, articleSummaries);
+  const anchorScript = await chatGPTApiUtils.generateAnchorScript(env.CHAT_API_KEY, articleSummaries, today);
   console.log('Generating anchor script');
   console.log('Anchor script:', anchorScript);
 
