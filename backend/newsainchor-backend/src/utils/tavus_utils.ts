@@ -23,7 +23,7 @@ type generationReturn = {
 	video_name: string;
 };
 
-type VideoGenerationResponse = {
+export type VideoGenerationResponse = {
 	video_id: string;
 	video_name: string;
 	status: string;

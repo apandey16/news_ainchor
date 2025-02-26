@@ -85,12 +85,39 @@ async function handleRequest(env: Env) {
   console.log('Generating news video');
   console.log('Video generation response:', videoGenerationResponse);
   
-  // Need to find a better way to wait for the video to be generated
-  await new Promise(resolve => setTimeout(resolve, 20 * 60 * 1000));
-  
+  // Polling for video generation status
   const videoId = videoGenerationResponse.video_id;
-  console.log('Getting news video');
-  const videoData = await tavusUtils.getNewsVideo({ apiKey: env.TAVUS_API_KEY, videoId: videoId });
+  let videoData: tavusUtils.VideoGenerationResponse = {
+    status: '',
+    stream_url: '',
+    video_id: '',
+    video_name: '',
+    data: { script: '' },
+    replica_id: '',
+    created_at: '',
+    updated_at: '',
+    download_url: '',
+    hosted_url: '',
+    status_details: '',
+    generation_progress: '',
+  };
+
+  const maxRetries = 40; // 20 minutes with 30 seconds interval
+  const interval = 30000; // 30 seconds
+
+  for (let i = 0; i < maxRetries; i++) {
+    console.log(`Checking video status, attempt ${i + 1}`);
+    videoData = await tavusUtils.getNewsVideo({ apiKey: env.TAVUS_API_KEY, videoId: videoId });
+    if (videoData.status === 'ready') {
+      break;
+    }
+    await new Promise(resolve => setTimeout(resolve, interval));
+  }
+
+  if (videoData.status !== 'ready') {
+    throw new Error('Video generation failed or timed out');
+  }
+
   console.log('Video data:', videoData);
   await writeToDb(today, videoData.stream_url, env.video_date_db);
 
