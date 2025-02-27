@@ -7,27 +7,35 @@ dotenv.config();
 const MODEL = 'gpt-4o-mini';
 
 // Pass in the news article and get a summary for it
-export async function summarizeText(apiKey:string, text: string): Promise<string> {
-	try {
+export async function summarizeText(apiKey: string, text: string): Promise<string | undefined> {
+
 		const openai = new OpenAI({
 			apiKey: apiKey,
 		});
-		const completion = await openai.chat.completions.create({
-			model: MODEL,
-			messages: [
-				{ role: 'user', content: `Summarize the following news article from today (ignore any HTML artifacts): ${text}` },
-			],
-		});
+		let attempts = 0;
+		while (attempts < 5) {
+			try {
+				const completion = await openai.chat.completions.create({
+					model: MODEL,
+					messages: [
+						{ role: 'user', content: `Summarize the following news article from today (ignore any HTML artifacts): ${text}` },
+					],
+				});
 
-		const content = completion.choices[0].message.content;
-		if (content === null) {
-			throw new Error('Received null content from OpenAI');
+				const content = completion.choices[0].message.content;
+				if (content === null) {
+					throw new Error('Received null content from OpenAI');
+				}
+				return content;
+			} catch (error) {
+				attempts++;
+				if (attempts >= 5) {
+					console.log(`Failed to summarize after ${attempts} attempts: ${text}`);
+					throw new Error('Failed to summarize text after multiple attempts');
+				}
+			}
 		}
-		return content;
-	} catch (error) {
-		console.error('Error summarizing text:', error);
-		throw new Error('Failed to summarize text');
-	}
+	
 }
 
 // Pass in all the summaries and get a news anchor script to pass to Tavus

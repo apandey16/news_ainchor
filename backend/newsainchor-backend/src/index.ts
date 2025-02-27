@@ -51,12 +51,16 @@ async function handleRequest(env: Env) {
     articleContents.push(content);
   }
   console.log('Fetching article content');
-  console.log('Article contents:', articleContents);
+//   console.log('Article contents:', articleContents);
 
   const articleSummaries: string[] = [];
   for (const content of articleContents) {
     const summary = await chatGPTApiUtils.summarizeText(env.CHAT_API_KEY, content);
-    articleSummaries.push(summary);
+    if (summary) {
+      articleSummaries.push(summary);
+    } else {
+      console.error('Failed to generate summary for content:', content);
+    }
   }
   console.log('Summarizing articles');
   console.log('Article summaries:', articleSummaries);
