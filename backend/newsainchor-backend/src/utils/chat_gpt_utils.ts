@@ -1,67 +1,100 @@
 // This file contains utility functions for interacting with the OpenAI GPT-4o-mini model
-// To-do: Once hosted on AWS, move this to the lambda package and install needed dependencies. Also update API key
 import OpenAI from 'openai';
 import * as dotenv from 'dotenv';
 dotenv.config();
 
 const MODEL = 'gpt-4o-mini';
+const MAX_RETRIES = 5;
+const RETRY_DELAY = 1000; // 1 second delay between retries
+
+// Helper function to wait
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 // Pass in the news article and get a summary for it
 export async function summarizeText(apiKey: string, text: string): Promise<string | undefined> {
+	const openai = new OpenAI({
+		apiKey: apiKey,
+	});
+	let attempts = 0;
+	let lastError: any;
 
-		const openai = new OpenAI({
-			apiKey: apiKey,
-		});
-		let attempts = 0;
-		while (attempts < 5) {
-			try {
-				const completion = await openai.chat.completions.create({
-					model: MODEL,
-					messages: [
-						{ role: 'user', content: `Summarize the following news article from today (ignore any HTML artifacts): ${text}` },
-					],
-				});
+	while (attempts < MAX_RETRIES) {
+		try {
+			const completion = await openai.chat.completions.create({
+				model: MODEL,
+				messages: [
+					{ role: 'user', content: `Summarize the following news article from today (ignore any HTML artifacts): ${text}` },
+				],
+			});
 
-				const content = completion.choices[0].message.content;
-				if (content === null) {
-					throw new Error('Received null content from OpenAI');
-				}
-				return content;
-			} catch (error) {
-				attempts++;
-				if (attempts >= 5) {
-					console.log(`Failed to summarize after ${attempts} attempts: ${text}`);
-					throw new Error('Failed to summarize text after multiple attempts');
-				}
+			const content = completion.choices[0].message.content;
+			if (content === null) {
+				throw new Error('Received null content from OpenAI');
 			}
+			return content;
+		} catch (error: any) {
+			attempts++;
+			lastError = error;
+			console.error(`Attempt ${attempts} failed:`, {
+				error: error.message,
+				status: error.status,
+				type: error.type
+			});
+
+			if (attempts < MAX_RETRIES) {
+				await delay(RETRY_DELAY * attempts); // Exponential backoff
+				continue;
+			}
+
+			console.error(`Failed to summarize after ${attempts} attempts. Last error:`, lastError);
+			throw new Error(`Failed to summarize text after ${attempts} attempts: ${lastError.message}`);
 		}
-	
+	}
 }
 
 // Pass in all the summaries and get a news anchor script to pass to Tavus
 export async function generateAnchorScript(apiKey: string, texts: string[], date: string): Promise<string> {
-	try {
-		const openai = new OpenAI({
-			apiKey: apiKey,
-		});
-		const combinedText = texts.map((text, index) => `Article ${index + 1}: ${text}`).join('\n');
-		const completion = await openai.chat.completions.create({
-			model: MODEL,
-			messages: [
-				{
-					role: 'user',
-					content: `Generate a news anchor script for a one minute tik-tok style video for an app called NewsAInchor use some humor. Make each section short. During the introduction mention today's date which is ${date} in DD-MM-YYYY format. Do not include any stage directions or segment headers or any flairs in the text like astricks. It should be based on the following three articles: ${combinedText}`,
-				},
-			],
-		});
+	const openai = new OpenAI({
+		apiKey: apiKey,
+	});
+	let attempts = 0;
+	let lastError: any;
 
-		const content = completion.choices[0].message.content;
-		if (content === null) {
-			throw new Error('Received null content from OpenAI');
+	while (attempts < MAX_RETRIES) {
+		try {
+			const combinedText = texts.map((text, index) => `Article ${index + 1}: ${text}`).join('\n');
+			const completion = await openai.chat.completions.create({
+				model: MODEL,
+				messages: [
+					{
+						role: 'user',
+						content: `Generate a news anchor script for a one minute tik-tok style video for an app called NewsAInchor use some humor. Make each section short. During the introduction mention today's date which is ${date} in DD-MM-YYYY format. Do not include any stage directions or segment headers or any flairs in the text like astricks. It should be based on the following three articles: ${combinedText}`,
+					},
+				],
+			});
+
+			const content = completion.choices[0].message.content;
+			if (content === null) {
+				throw new Error('Received null content from OpenAI');
+			}
+			return content;
+		} catch (error: any) {
+			attempts++;
+			lastError = error;
+			console.error(`Attempt ${attempts} failed to generate anchor script:`, {
+				error: error.message,
+				status: error.status,
+				type: error.type
+			});
+
+			if (attempts < MAX_RETRIES) {
+				await delay(RETRY_DELAY * attempts); // Exponential backoff
+				continue;
+			}
+
+			console.error(`Failed to generate anchor script after ${attempts} attempts. Last error:`, lastError);
+			throw new Error(`Failed to generate anchor script after ${attempts} attempts: ${lastError.message}`);
 		}
-		return content;
-	} catch (error) {
-		console.error('Error generating anchor script:', error);
-		throw new Error('Failed to generate anchor script');
 	}
+	return ''; // This line should never be reached due to the throw in the catch block
 }
