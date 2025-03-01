@@ -94,17 +94,67 @@ async function writeToDb(key: string, value: string, db: KVNamespace) {
     throw error;
   }
 }
+// Date utility functions
+function formatDateForApi(displayDate: string): string {
+  // Convert from DD-MM-YYYY to YYYY-MM-DD for API calls
+  if (!isValidDisplayDate(displayDate)) {
+    console.error('Invalid display date format:', displayDate);
+    throw new Error(`Invalid date format: ${displayDate}. Expected DD-MM-YYYY`);
+  }
+  const [day, month, year] = displayDate.split('-');
+  return `${year}-${month}-${day}`;
+}
+
+function formatDateForDisplay(date: Date): string {
+  // Format as DD-MM-YYYY
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  return `${day}-${month}-${year}`;
+}
+
+function getCurrentDate(): string {
+  // Get current date in Los Angeles (Pacific) time in DD-MM-YYYY format
+  const now = new Date();
+  const laPacificDate = new Date(now.toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }));
+  return formatDateForDisplay(laPacificDate);
+}
+
+function isValidDisplayDate(dateStr: string): boolean {
+  // Check if string is in DD-MM-YYYY format
+  const regex = /^\d{2}-\d{2}-\d{4}$/;
+  if (!regex.test(dateStr)) return false;
+  
+  const [day, month, year] = dateStr.split('-').map(Number);
+  
+  // Check if date is valid
+  const date = new Date(year, month - 1, day);
+  return date.getDate() === day && 
+         date.getMonth() === month - 1 && 
+         date.getFullYear() === year;
+}
 
 async function handleRequest(env: Env, date?: string) {
   try {
-    const targetDate = date || new Date().toISOString().split('T')[0];
-    console.log('Starting handleRequest for date:', targetDate);
+    // Always use DD-MM-YYYY format for display and storage
+    const displayDate = date && isValidDisplayDate(date) ? date : getCurrentDate();
+    
+    // Convert to YYYY-MM-DD only for API calls
+    const apiDate = formatDateForApi(displayDate);
+    
+    console.log('Display/Storage date (DD-MM-YYYY):', displayDate);
+    console.log('API date (YYYY-MM-DD):', apiDate);
+    console.log('Current time in Los Angeles:', new Date().toLocaleString('en-US', { 
+      timeZone: 'America/Los_Angeles',
+      dateStyle: 'full',
+      timeStyle: 'long'
+    }));
 
     // 1. Fetch top news articles
     console.log('Step 1: Fetching top news articles');
     const topArticlesObject = await newsApiUtils.getTopNewsArticles({
       api_token: env.THE_NEWS_API_KEY as string,
-      published_on: targetDate,
+      published_on: apiDate, // Use YYYY-MM-DD format for API
       locale: 'us',
       limit: 3,
       language: 'en',
@@ -183,12 +233,12 @@ async function handleRequest(env: Env, date?: string) {
 
     // 6. Save to KV
     console.log('Step 4: Saving article details to KV');
-    await writeToDb(targetDate, JSON.stringify(articleDetails), env.article_summary);
+    await writeToDb(displayDate, JSON.stringify(articleDetails), env.article_summary);
     console.log('Article details saved successfully');
 
     // 7. Generate anchor script
     console.log('Step 5: Generating anchor script');
-    const anchorScript = await chatGPTApiUtils.generateAnchorScript(env.CHAT_API_KEY, articleSummaries, targetDate);
+    const anchorScript = await chatGPTApiUtils.generateAnchorScript(env.CHAT_API_KEY, articleSummaries, displayDate);
     if (!anchorScript) {
       throw new Error('Failed to generate anchor script');
     }
@@ -200,6 +250,7 @@ async function handleRequest(env: Env, date?: string) {
       deepFakeId: env.DEEPFAKE_ID,
       script: anchorScript,
       apiKey: env.TAVUS_API_KEY,
+      date: displayDate,
     });
     console.log('Video generation initiated:', videoGenerationResponse);
 
@@ -245,8 +296,26 @@ async function handleRequest(env: Env, date?: string) {
 
     // 10. Save video URL
     console.log('Step 8: Saving video URL to KV');
-    await writeToDb(targetDate, videoData.stream_url, env.video_date_db);
-    console.log('Video URL saved successfully');
+    if (!videoData.stream_url) {
+      console.error('No stream_url found in video data');
+      throw new Error('Video generation completed but no stream_url was provided');
+    }
+    
+    console.log('Video URL to save:', videoData.stream_url);
+    try {
+      await writeToDb(displayDate, videoData.stream_url, env.video_date_db);
+      
+      // Verify the video URL was saved correctly
+      const savedUrl = await env.video_date_db.get(displayDate);
+      if (savedUrl) {
+        console.log('Video URL saved and verified in video_date_db');
+      } else {
+        console.error('Video URL was not found in video_date_db after saving');
+      }
+    } catch (error) {
+      console.error('Failed to save video URL:', error);
+      // Continue execution even if video URL save fails
+    }
 
     return new Response('Success', { status: 200 });
   } catch (error) {

@@ -7,12 +7,14 @@ dotenv.config();
 
 const TAVUS_API_KEY = process.env.TAVUS_API_KEY;
 
-function createVideoTitle(uniqueIdentifier?: string) {
-	const date = format(new Date(), 'dd_MM_yyyy');
+function createVideoTitle(date?: string, uniqueIdentifier?: string) {
+	// Use the provided date or format current date as DD-MM-YYYY
+	const formattedDate = date ? date.replace(/-/g, '_') : format(new Date(), 'dd_MM_yyyy');
+	
 	if (uniqueIdentifier) {
-		return `${date}_${uniqueIdentifier}`;
+		return `${formattedDate}_${uniqueIdentifier}`;
 	}
-	return date;
+	return formattedDate;
 }
 
 type generationReturn = {
@@ -46,9 +48,10 @@ export async function generateNewsVideo(params: {
 	script: string;
 	uniqueTitleIdentifier?: string;
 	apiKey: string;
+	date?: string;
 }): Promise<generationReturn> {
-	const title = createVideoTitle(params.uniqueTitleIdentifier);
-	console.log(title);
+	const title = createVideoTitle(params.date, params.uniqueTitleIdentifier);
+	console.log('Creating video with title:', title);
 
 	// options for the generation API request
 	const body = {
