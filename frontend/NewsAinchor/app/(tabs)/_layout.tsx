@@ -14,38 +14,38 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        headerShown: false,
-        tabBarButton: HapticTab,
-        tabBarBackground: TabBarBackground,
-        tabBarStyle: Platform.select({
-          ios: {
-            // Use a transparent background on iOS to show the blur effect
-            position: 'absolute',
-          },
-          default: {},
-        }),
+      tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+      headerShown: false,
+      tabBarButton: HapticTab,
+      tabBarBackground: TabBarBackground,
+      tabBarStyle: Platform.select({
+        ios: {
+        // Use a transparent background on iOS to show the blur effect
+        position: 'absolute',
+        },
+        default: {},
+      }),
       }}>
       <Tabs.Screen
-        name="Anchor"
-        options={{
-          title: 'Anchor',
-          tabBarIcon: ({ color }: { color: string }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
-        }}
+      name="Anchor"
+      options={{
+        title: 'Anchor',
+        tabBarIcon: ({ color }: { color: string }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+      }}
       />
       <Tabs.Screen
-        name="News"
-        options={{
-          title: 'News',
-            tabBarIcon: ({ color }: { color: string }) => <IconSymbol size={28} name="house.fill" color={color} />,
-        }}
+      name="index"
+      options={{
+        title: 'News',
+        tabBarIcon: ({ color }: { color: string }) => <IconSymbol size={28} name="house.fill" color={color} />,
+      }}
       />
       <Tabs.Screen
-        name="settings"
-        options={{
-          title:'Settings',
-          tabBarIcon: ({ color }: { color: string }) => <IconSymbol size={28} name="gearshape.fill" color={color} />,
-        }}
+      name="settings"
+      options={{
+        title: 'Settings',
+        tabBarIcon: ({ color }: { color: string }) => <IconSymbol size={28} name="house.fill" color={color} />,
+      }}
       />
     </Tabs>
   );

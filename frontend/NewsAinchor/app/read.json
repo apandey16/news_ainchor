@@ -1,0 +1,55 @@
+{
+    "meta": {
+        "found": 935,
+        "returned": 3,
+        "limit": 3,
+        "page": 1
+    },
+    "data": [
+        {
+            "uuid": "7fafa706-9264-4af3-bc95-1a1a23374b04",
+            "title": "Zelenskyy speaks out after public spat with Trump, Vance, says dustup 'bad for both sides'",
+            "description": "Ukrainian President Volodymyr Zelenskyy sits down for an exclusive interview on 'Special Report' after his explosive meeting with President Donald Trump.",
+            "keywords": "",
+            "snippet": "Ukrainian President Volodymyr Zelenskyy did not apologize for the heated exchange with President Donald Trump in the Oval Office, but told Fox News in an exclus...",
+            "url": "https://www.foxnews.com/media/zelenskyy-speaks-out-after-public-spat-trump-vance-dustup-bad-both-sides",
+            "image_url": "https://static.foxnews.com/foxnews.com/content/uploads/2025/02/gettyimages-2202565040-scaled.jpg",
+            "language": "en",
+            "published_at": "2025-02-28T23:59:01.000000Z",
+            "source": "foxnews.com",
+            "categories": ["general", "politics"],
+            "relevance_score": null,
+            "locale": "us"
+        },
+        {
+            "uuid": "51f37a14-6f78-4200-b5d8-52792778348a",
+            "title": "Transfer rumors, news: Real Madrid look at Arsenal's Saliba",
+            "description": "Real Madrid are hoping to sign Arsenal defender William Saliba in the summer. Transfer Talk has the latest news, gossip and rumors.",
+            "keywords": "",
+            "snippet": "Open Extended Reactions\n\nReal Madrid are discussing a potential move for Arsenal defender William Saliba, while the Gunners have stepped up their interest in Ba...",
+            "url": "https://www.espn.com/soccer/story/_/id/44058436/transfer-rumors-news-real-madrid-want-sign-arsenal-william-saliba",
+            "image_url": "https://a.espncdn.com/combiner/i?img=%2Fphoto%2F2025%2F0228%2Fr1457971_1296x729_16%2D9.jpg",
+            "language": "en",
+            "published_at": "2025-02-28T23:54:24.000000Z",
+            "source": "espn.com",
+            "categories": ["sports", "general"],
+            "relevance_score": null,
+            "locale": "us"
+        },
+        {
+            "uuid": "0619f721-0c94-42d4-ab56-ffea84245f9c",
+            "title": "Luigi Mangione's Pennsylvania attorney argues search, arrest were illegal",
+            "description": "A defense attorney for Luigi Mangione, the man charged with killing the CEO of UnitedHealthcare, insists a police search and arrest late last year were illegal.",
+            "keywords": "Article, 119312837",
+            "snippet": "Luigi Mangione (C), accused killer of US insurance CEO Brian Thompson, arrives for a hearing in New York City on Feb. 21, 2025.\n\nLuigi Mangione (C), accused kil...",
+            "url": "https://abcnews.go.com/US/luigi-mangiones-pennsylvania-attorney-argues-search-arrest-illegal/story?id=119312837",
+            "image_url": "https://i.abcnewsfe.com/a/923281a8-f645-43f3-9dac-9a355049e761/luigi1-gty-ml-250226_1740575936987_hpMain_16x9.jpg?w=1600",
+            "language": "en",
+            "published_at": "2025-02-28T23:53:43.000000Z",
+            "source": "abcnews.go.com",
+            "categories": ["general"],
+            "relevance_score": null,
+            "locale": "us"
+        }
+    ]
+}

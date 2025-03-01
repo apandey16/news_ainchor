@@ -1,6 +1,7 @@
 import { Dimensions, StyleSheet, Text, View } from 'react-native';
 import React from 'react';
 import { Image, TouchableOpacity, Linking } from 'react-native';
+import { useColorScheme } from 'react-native';
 
 interface ArticleCardItemProps {
     title: string;
@@ -8,18 +9,30 @@ interface ArticleCardItemProps {
     imageUrl: string;
     publisher: string;
     url: string;
+    dark?: boolean;
 }
 
-export default function ArticleCardItem({ title, description, imageUrl, publisher, url }: ArticleCardItemProps) {
+export default function ArticleCardItem({ title, description, imageUrl, publisher, url, dark }: ArticleCardItemProps) {
+      let color = useColorScheme() === 'dark' || dark ? '#172b45' : 'white';
+      let textColor = useColorScheme() === 'dark' || dark ? '#DBE9F4' : 'black';
+      let descriptionColor = useColorScheme() === 'dark' || dark ? '#6a7f99' : 'black';
     return (
-        <TouchableOpacity style={styles.cardItem} onPress={() => Linking.openURL(url)}>
-            <Image source={{ uri: imageUrl }} style={styles.image} />
-            <View style={styles.textContainer}>
-                <View style={styles.header}>
-                    <Text style={styles.title}>{title}</Text>
-                    <Text style={styles.publisher}>{publisher}</Text>
+        <TouchableOpacity style={[styles.cardItem, {backgroundColor: color}]} onPress={() => Linking.openURL(url)}>
+            <View style={{ flexDirection: 'column', width: "100%"}}>
+                <View style={{ flexDirection: 'row'}}>
+                    <View style={{flex: 4}}>
+                        <Text style={styles.publisher}>{publisher}</Text>
+                        <View style={{ flexDirection: 'row' }}>
+                            <View style={styles.textContainer}>
+                                <View style={styles.header}>
+                                    <Text style={[styles.title, {color: textColor}]}>{title}</Text>
+                                </View>
+                            </View>
+                        </View>
+                    </View>
+                    <Image source={{ uri: imageUrl }} style={styles.image} />
                 </View>
-                <Text style={styles.description} numberOfLines={2} ellipsizeMode='tail'>{description}</Text>
+                <Text style={[styles.description, {color: descriptionColor}]} numberOfLines={2} ellipsizeMode='tail'>{description}</Text>
             </View>
         </TouchableOpacity>
     )
@@ -40,13 +53,13 @@ const styles = StyleSheet.create({
         width: Dimensions.get('window').width * 0.9,
     },
     image: {
-        width: 80,
-        height: 80,
+        width: 100,
+        height: 100,
         borderRadius: 8,
     },
     textContainer: {
         flex: 1,
-        marginLeft: 10,
+        minWidth: 100
     },
     header: {
         flexDirection: 'row',
@@ -60,8 +73,8 @@ const styles = StyleSheet.create({
     },
     publisher: {
         fontSize: 14,
-        color: '#888',
-        marginLeft: 10,
+        color: 'gray',
+        fontWeight: 'bold',
     },
     description: {
         fontSize: 16,

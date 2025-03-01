@@ -22,6 +22,8 @@ import { Overlay } from "react-native-elements";
 import { Video } from "expo-av";
 import { Image } from "expo-image";
 
+import ArticleCardItem from "@/components/ArticleCardItem";
+
 const { height, width } = Dimensions.get("window");
 
 interface VideoWrapper {
@@ -45,17 +47,13 @@ const VideoWrapper = ({
   share,
   overlay,
   overlayVisible,
-  isTabFocused
+  isTabFocused,
 }: VideoWrapper) => {
   const bottomHeight = useBottomTabBarHeight();
   const { index, item } = data;
   const videoRef = useRef<Video>(null);
 
-  useEffect(() => {
-    if (!isTabFocused) {
-      videoRef.current?.pauseAsync();
-    }
-  }, [isTabFocused]);
+  const exampleArticles =  [{"description": "The appointment of a January 6 denier at the FBI should be and is incredibly worrying.", "imageUrl": "https://compote.slate.com/images/24c63d16-8900-46e1-a529-a8c4f6aeab2d.png?crop=1080%2C720%2Cx100%2Cy0&width=1560", "publisher": "slate.com", "title": "Trump’s FBI: Kash Patel and Dan Bongino aren’t interested in the law", "url": "https://slate.com/podcasts/amicus/2025/03/trumps-fbi-kash-patel-and-dan-bongino-arent-interested-in-the-law?via=rss"}, {"description": "Crispy potatoes have a 'boat-load of flavour'", "imageUrl": "https://cdn.mos.cms.futurecdn.net/8T6ym6L8vj3uakQtshgkpn-1200-80.jpg", "publisher": "theweek.com", "title": "Wine & shallot roast potatoes recipe", "url": "https://theweek.com/culture-life/food-drink/wine-and-shallot-roast-potatoes-recipe"}, {"description": "This is one of the biggest deals ever carved out at the EFM market and comes after a hot pursuit.", "imageUrl": "https://deadline.com/wp-content/uploads/2025/02/Good-Sex-Natalie-Portman.jpg?w=1024", "publisher": "deadline.com", "title": "Netflix Wins Out In Big Auction For Natalie Portman-Lena Dunham Rom-Com ‘Good Sex’", "url": "https://deadline.com/2025/02/netflix-buying-natalie-portman-lena-dunham-rom-com-good-sex-1236297140/"}]
 
   return (
     <View
@@ -72,10 +70,22 @@ const VideoWrapper = ({
         resizeMode="cover"
         volume={1.0}
       />
-
+      <Overlay isVisible={overlayVisible} onBackdropPress={overlay} fullScreen={false} backdropStyle={{ backgroundColor: 'rgba(0, 0, 0, 0.50)' }} overlayStyle={{ backgroundColor: 'rgba(0, 0, 0, 0.0)', bottom: "-7%" }}>
+        <View>
+          <View style={{width: "90%", alignSelf: 'center'}}>
+            <Text style={$overlayText}>Enjoy The Articles Yourself!</Text>
+            {/* <Text style={$overlayText}>Please Read More! Click any of the links below to read the article we got our information from.</Text> */}
+          </View>
+          <View style={{ flexDirection: "column", justifyContent: "space-around", opacity: 2, alignSelf: 'center' }}>
+            <ArticleCardItem title={exampleArticles[0].title} description={exampleArticles[0].description} imageUrl={exampleArticles[0].imageUrl} publisher={exampleArticles[0].publisher} url={exampleArticles[0].url} dark={true} />
+            <ArticleCardItem title={exampleArticles[1].title} description={exampleArticles[1].description} imageUrl={exampleArticles[1].imageUrl} publisher={exampleArticles[1].publisher} url={exampleArticles[1].url} dark={true} />
+            <ArticleCardItem title={exampleArticles[2].title} description={exampleArticles[2].description} imageUrl={exampleArticles[2].imageUrl} publisher={exampleArticles[2].publisher} url={exampleArticles[2].url} dark={true} />
+            </View>
+        </View>
+      </Overlay>
       <Pressable onPress={overlay} style={$overlayContainer}>
-        <Text style={$overlayText} numberOfLines={2} ellipsizeMode="tail">Title</Text>
-        <Text style={$overlayText} numberOfLines={2} ellipsizeMode="tail">DescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescription</Text>  
+        <Text style={$Title} numberOfLines={2} ellipsizeMode="tail">Title</Text>
+        <Text style={$Title} numberOfLines={2} ellipsizeMode="tail">Click here to read the articles yourself</Text>  
       </Pressable>
 
       <Pressable onPress={pause} style={$overlay} />
@@ -84,30 +94,21 @@ const VideoWrapper = ({
         <Image source="share" style={$shareButtonImage} />
         <Text style={$shareButtonText}>Share</Text>
       </Pressable>
-
-      <Overlay isVisible={overlayVisible ?? false} onBackdropPress={overlay ?? (() => {})}>
-        <View style={{ padding: 20 }}>
-          <Text style={$overlayText}>Title</Text>
-          <Text style={$overlayText}>DescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescription</Text>
-          <View style={{ flexDirection: "column", justifyContent: "space-around", gap: 10 }}>
-        <Pressable style={$squareButton} onPress={() => console.log("Square 1 clicked")}>
-          <Text style={$overlayText}>Square 1</Text>
-        </Pressable>
-        <Pressable style={$squareButton} onPress={() => console.log("Square 2 clicked")}>
-          <Text style={$overlayText}>Square 2</Text>
-        </Pressable>
-        <Pressable style={$squareButton} onPress={() => console.log("Square 3 clicked")}>
-          <Text style={$overlayText}>Square 3</Text>
-        </Pressable>
-          </View>
-        </View>
-      </Overlay>
     </View>
   );
 };
 
 export default function HomeScreen() {
   const bottomHeight = useBottomTabBarHeight();
+  const isFocused = useIsFocused();
+
+  useEffect(() => {
+    if (!isFocused) {
+      setPauseOverride(true);
+    } else {
+      setPauseOverride(false);
+    }
+  }, [isFocused]);
 
   const videos = ["https://stream.mux.com/ylqmQuaYdXzI8CIzqfYbH1ZTU2U7GJ6sEUlnW9jcyZ4.m3u8", "https://videos.pexels.com/video-files/5532771/5532771-sd_226_426_25fps.mp4"];
 
@@ -207,11 +208,21 @@ const $overlayContainer: ViewStyle = {
   left: 10,
   alignItems: "left",
   gap: 8,
-  maxWidth: width * 0.6
+  maxWidth: width * 0.8
 };
 
 const $overlayText: TextStyle = {
-  color: "white",
+  color: "#DBE9F4",
+  fontSize: 24,
+  fontWeight: "bold",
+  alignSelf: 'center'
+}
+
+const $Title: TextStyle = {
+  color: "#DBE9F4",
+  fontSize: 16,
+  alignSelf: 'left',
+  opacity: 0.8
 }
 
 const $shareButtonContainer: ViewStyle = {
