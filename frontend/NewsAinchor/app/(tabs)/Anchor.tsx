@@ -23,9 +23,52 @@ import { Video } from "expo-av";
 import { Image } from "expo-image";
 
 import ArticleCardItem from "@/components/ArticleCardItem";
+import Cloudflare from 'cloudflare';
+
+import { CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_ARTICLE_NAMESPACE_ID, CLOUDFLARE_VIDEO_NAMESPACE_ID, CLOUDFLARE_EMAIL } from "@env";
+import moment from "moment";
 
 const { height, width } = Dimensions.get("window");
 
+const fetchKVPairVideo = async (key: string): Promise<any | null> => {
+  try {
+    const client = new Cloudflare({
+      apiEmail: CLOUDFLARE_EMAIL, // This is the default and can be omitted
+      apiToken: CLOUDFLARE_API_TOKEN // This is the default and can be omitted
+    });
+
+    const response = await client.kv.namespaces.values.get(CLOUDFLARE_VIDEO_NAMESPACE_ID, key, { account_id : CLOUDFLARE_ACCOUNT_ID })
+
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    const data = await response.text();
+    return data;
+  } catch (error) {
+    console.error('Error fetching KV pair:', error);
+    return null;
+  }
+};
+
+const fetchKVPairArticle = async (key: string): Promise<any | null> => {
+  try {
+    const client = new Cloudflare({
+      apiEmail: CLOUDFLARE_EMAIL, // This is the default and can be omitted
+      apiToken: CLOUDFLARE_API_TOKEN // This is the default and can be omitted
+    });
+
+    const response = await client.kv.namespaces.values.get(CLOUDFLARE_ARTICLE_NAMESPACE_ID, key, { account_id : CLOUDFLARE_ACCOUNT_ID })
+
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    const data = await response.text();
+    return data;
+  } catch (error) {
+    console.error('Error fetching KV pair:', error);
+    return null;
+  }
+};
 interface VideoWrapper {
   data: ListRenderItemInfo<string>;
   allVideos: string[];
@@ -36,6 +79,8 @@ interface VideoWrapper {
   overlay: () => void;
   overlayVisible: boolean;
   isTabFocused: boolean;
+  articles: any;
+  date: string;
 }
 
 const VideoWrapper = ({
@@ -47,13 +92,11 @@ const VideoWrapper = ({
   share,
   overlay,
   overlayVisible,
-  isTabFocused,
+  articles,
+  date
 }: VideoWrapper) => {
   const bottomHeight = useBottomTabBarHeight();
   const { index, item } = data;
-  const videoRef = useRef<Video>(null);
-
-  const exampleArticles =  [{"description": "The appointment of a January 6 denier at the FBI should be and is incredibly worrying.", "imageUrl": "https://compote.slate.com/images/24c63d16-8900-46e1-a529-a8c4f6aeab2d.png?crop=1080%2C720%2Cx100%2Cy0&width=1560", "publisher": "slate.com", "title": "Trump’s FBI: Kash Patel and Dan Bongino aren’t interested in the law", "url": "https://slate.com/podcasts/amicus/2025/03/trumps-fbi-kash-patel-and-dan-bongino-arent-interested-in-the-law?via=rss"}, {"description": "Crispy potatoes have a 'boat-load of flavour'", "imageUrl": "https://cdn.mos.cms.futurecdn.net/8T6ym6L8vj3uakQtshgkpn-1200-80.jpg", "publisher": "theweek.com", "title": "Wine & shallot roast potatoes recipe", "url": "https://theweek.com/culture-life/food-drink/wine-and-shallot-roast-potatoes-recipe"}, {"description": "This is one of the biggest deals ever carved out at the EFM market and comes after a hot pursuit.", "imageUrl": "https://deadline.com/wp-content/uploads/2025/02/Good-Sex-Natalie-Portman.jpg?w=1024", "publisher": "deadline.com", "title": "Netflix Wins Out In Big Auction For Natalie Portman-Lena Dunham Rom-Com ‘Good Sex’", "url": "https://deadline.com/2025/02/netflix-buying-natalie-portman-lena-dunham-rom-com-good-sex-1236297140/"}]
 
   return (
     <View
@@ -76,15 +119,36 @@ const VideoWrapper = ({
             <Text style={$overlayText}>Enjoy The Articles Yourself!</Text>
             {/* <Text style={$overlayText}>Please Read More! Click any of the links below to read the article we got our information from.</Text> */}
           </View>
-          <View style={{ flexDirection: "column", justifyContent: "space-around", opacity: 2, alignSelf: 'center' }}>
-            <ArticleCardItem title={exampleArticles[0].title} description={exampleArticles[0].description} imageUrl={exampleArticles[0].imageUrl} publisher={exampleArticles[0].publisher} url={exampleArticles[0].url} dark={true} />
-            <ArticleCardItem title={exampleArticles[1].title} description={exampleArticles[1].description} imageUrl={exampleArticles[1].imageUrl} publisher={exampleArticles[1].publisher} url={exampleArticles[1].url} dark={true} />
-            <ArticleCardItem title={exampleArticles[2].title} description={exampleArticles[2].description} imageUrl={exampleArticles[2].imageUrl} publisher={exampleArticles[2].publisher} url={exampleArticles[2].url} dark={true} />
+            <View style={{ flexDirection: "column", justifyContent: "space-around", opacity: 2, alignSelf: 'center' }}>
+                <ArticleCardItem
+                title={articles[0].title}
+                description={articles[0].description}
+                imageUrl={articles[0].imageUrl}
+                publisher={articles[0].publisher}
+                url={articles[0].url}
+                dark={true}
+                />
+                <ArticleCardItem
+                title={articles[1].title}
+                description={articles[1].description}
+                imageUrl={articles[1].imageUrl}
+                publisher={articles[1].publisher}
+                url={articles[1].url}
+                dark={true}
+                />
+                <ArticleCardItem
+                title={articles[2].title}
+                description={articles[2].description}
+                imageUrl={articles[2].imageUrl}
+                publisher={articles[2].publisher}
+                url={articles[2].url}
+                dark={true}
+                />
             </View>
         </View>
       </Overlay>
       <Pressable onPress={overlay} style={$overlayContainer}>
-        <Text style={$Title} numberOfLines={2} ellipsizeMode="tail">Title</Text>
+        <Text style={$Title} numberOfLines={2} ellipsizeMode="tail">{date}</Text>
         <Text style={$Title} numberOfLines={2} ellipsizeMode="tail">Click here to read the articles yourself</Text>  
       </Pressable>
 
@@ -110,12 +174,69 @@ export default function HomeScreen() {
     }
   }, [isFocused]);
 
-  const videos = ["https://stream.mux.com/ylqmQuaYdXzI8CIzqfYbH1ZTU2U7GJ6sEUlnW9jcyZ4.m3u8", "https://videos.pexels.com/video-files/5532771/5532771-sd_226_426_25fps.mp4"];
+  let date = moment();
+  let videoDate;
+  if (date.hour() < 10) {
+    date = date.subtract(1, "days");
+  } else {
+    date = date;
+  }
 
-  const [allVideos, setAllVideos] = useState(videos);
+  videoDate = date.format("DD-MM-YYYY");
+
+  let titleDate = date.format("dddd, MMMM Do YYYY");
+
+  const [allVideos, setAllVideos] = useState([]);
+  const [allArticles, setAllArticles] = useState([]);
   const [visibleIndex, setVisibleIndex] = useState(0);
   const [pauseOverride, setPauseOverride] = useState(false);
   const [overlayVisible, setOverlayVisible] = useState(false);
+
+  useEffect(() => {
+    const fetchVideos = async () => {
+      if (isFocused) {
+        let attempts = 0;
+        const maxAttempts = 3;
+        while (attempts < maxAttempts) {
+          try {
+            const result = await fetchKVPairVideo(videoDate);
+            const parsedVideos = JSON.parse(result);
+            setAllVideos(parsedVideos);
+            break;
+          } catch (error) {
+            attempts++;
+            if (attempts >= maxAttempts) {
+              console.error('Failed to fetch videos after multiple attempts:', error);
+            }
+          }
+        }
+      }
+    };
+    fetchVideos();
+  }, [isFocused]);
+
+  useEffect(() => {
+    const fetchArticles = async () => {
+      if (isFocused) {
+        let attempts = 0;
+        const maxAttempts = 3;
+        while (attempts < maxAttempts) {
+          try {
+            const result = await fetchKVPairArticle(videoDate);
+            const parsedArticles = JSON.parse(result);
+            setAllArticles(parsedArticles);
+            break;
+          } catch (error) {
+            attempts++;
+            if (attempts >= maxAttempts) {
+              console.error('Failed to fetch articles after multiple attempts:', error);
+            }
+          }
+        }
+      }
+    };
+    fetchArticles();
+  }, [isFocused]);
 
   const onViewableItemsChanged = (event: any) => {
     const newIndex = Number(event.viewableItems.at(-1).key);
@@ -167,6 +288,8 @@ export default function HomeScreen() {
               overlay={overlay}
               overlayVisible={overlayVisible}
               isTabFocused={focused}
+              articles={allArticles[0]}
+              date={titleDate}
             />
           );
         }}

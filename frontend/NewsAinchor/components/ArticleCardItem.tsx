@@ -25,7 +25,7 @@ export default function ArticleCardItem({ title, description, imageUrl, publishe
                         <View style={{ flexDirection: 'row' }}>
                             <View style={styles.textContainer}>
                                 <View style={styles.header}>
-                                    <Text style={[styles.title, {color: textColor}]}>{title}</Text>
+                                    <Text style={[styles.title, {color: textColor}]} numberOfLines={4} ellipsizeMode='tail'>{title}</Text>
                                 </View>
                             </View>
                         </View>
@@ -59,7 +59,6 @@ const styles = StyleSheet.create({
     },
     textContainer: {
         flex: 1,
-        minWidth: 100
     },
     header: {
         flexDirection: 'row',

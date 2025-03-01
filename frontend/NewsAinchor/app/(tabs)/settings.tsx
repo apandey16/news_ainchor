@@ -1,9 +1,10 @@
-import { StyleSheet, Switch, TouchableOpacity, Linking, Alert, SafeAreaView } from 'react-native';
+import { StyleSheet, Switch, TouchableOpacity, Linking, Alert, SafeAreaView, View, Text, useColorScheme } from 'react-native';
 import { useState, useEffect } from 'react';
 import * as Notifications from 'expo-notifications';
 
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import { color } from 'react-native-elements/dist/helpers';
 
 export default function SettingsScreen() {
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
@@ -48,6 +49,9 @@ export default function SettingsScreen() {
     Linking.openURL('mailto:newsainchor@gmail.com');
   };
 
+  let textColor = useColorScheme() === 'dark' ? '#DBE9F4' : 'black';
+  let buttonText = useColorScheme() === 'dark' ? '#DBE9F4' : 'white';
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <ThemedView style={styles.container}>
@@ -60,9 +64,17 @@ export default function SettingsScreen() {
             onValueChange={handleNotificationToggle}
           />
         </ThemedView>
+        <View style={{height: "10%"}}>
+        </View>
+        <View style={{height: "30%", width: "90%", alignSelf: "center"}}>
+          <Text style={[styles.welcomeText, {color : textColor}]}>Thank you for using News AInchor!</Text>
+          <View style={{height: "50%"}}></View>
+          <Text style={[styles.welcomeText2, {color : textColor}]}>Since we are still early in release please let us know of any bugs you find or features you would want in the app. Your ideas will help us make the app the perfect news app of your dreams!</Text>
 
+        </View>
+        <View style={{height: "15%"}} />
         <TouchableOpacity onPress={handleContactPress} style={styles.contactButton}>
-          <ThemedText style={styles.contactButtonText}>Contact Us</ThemedText>
+          <ThemedText style={[styles.contactButtonText, {color: buttonText}]}>Contact Us</ThemedText>
         </TouchableOpacity>
       </ThemedView>
     </SafeAreaView>
@@ -101,8 +113,16 @@ const styles = StyleSheet.create({
     marginTop: 24,
   },
   contactButtonText: {
-    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
+  },
+  welcomeText: {
+    fontSize: 30,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  welcomeText2: {
+    fontSize: 20,
+    textAlign: 'center',
   },
 });

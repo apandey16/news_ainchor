@@ -12,7 +12,6 @@ import {useColorScheme} from 'react-native';
   // Example usage of ArticleCardList component
   const fetchTopArticles = async (): Promise<string> => {
     const today = moment().format('YYYY-MM-DD'); // Get today's date
-    console.log("Today's date: ", today);
   
     return await getTopNewsArticles({
       api_token: THE_NEWS_API_KEY as string,
@@ -53,9 +52,8 @@ export default function TabTwoScreen() {
     fetchArticles();
   }, []);
 
-  let backgroundColor = useColorScheme() === 'dark' ? '#07172c' : 'white';
+  let backgroundColor = useColorScheme() === 'dark' ? '#07172c' : '';
 
-  console.log(articles);
   return (
     <View style={[styles.container, {backgroundColor: backgroundColor}]}>
       <View style={styles.subContainer}>
@@ -66,16 +64,6 @@ export default function TabTwoScreen() {
 }
 
 const styles = StyleSheet.create({
-  headerImage: {
-    color: '#808080',
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
-  },
-  titleContainer: {
-    flexDirection: 'column',
-    gap: 8,
-  },
   container: {
     flex: 1,
     alignItems: 'center',

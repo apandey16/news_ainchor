@@ -16,7 +16,6 @@ export default function ArticleCardList({ articles }: { articles: Array<{ title:
             )
             }
             keyExtractor={(item, index) => index.toString()}
-            contentContainerStyle={styles.list}
         />
     );
 }
@@ -26,9 +25,6 @@ const styles = StyleSheet.create({
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
-    },
-    list: {
-        width: '90%'
     },
     title: {
         fontSize: 24,

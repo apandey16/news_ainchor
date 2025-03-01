@@ -13,6 +13,7 @@ export default function TabLayout() {
 
   return (
     <Tabs
+      initialRouteName='index'
       screenOptions={{
       tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
       headerShown: false,
@@ -30,7 +31,7 @@ export default function TabLayout() {
       name="Anchor"
       options={{
         title: 'Anchor',
-        tabBarIcon: ({ color }: { color: string }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+        tabBarIcon: ({ color }: { color: string }) => <IconSymbol size={28} name="video.fill" color={color} />,
       }}
       />
       <Tabs.Screen
@@ -44,7 +45,7 @@ export default function TabLayout() {
       name="settings"
       options={{
         title: 'Settings',
-        tabBarIcon: ({ color }: { color: string }) => <IconSymbol size={28} name="house.fill" color={color} />,
+        tabBarIcon: ({ color }: { color: string }) => <IconSymbol size={28} name="gearshape.fill" color={color} />,
       }}
       />
     </Tabs>
