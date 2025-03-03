@@ -68,7 +68,7 @@ export async function generateAnchorScript(apiKey: string, texts: string[], date
 				messages: [
 					{
 						role: 'user',
-						content: `Generate a news anchor script for a one minute tik-tok style video for an app called NewsAInchor use some humor. Make each section short. During the introduction mention today's date which is ${date} in DD-MM-YYYY format. Do not include any stage directions or segment headers or any flairs in the text like astricks. It should be based on the following three articles: ${combinedText}`,
+						content: `Generate a news anchor script for a one minute tik-tok style video for an app called NewsAInchor use some humor. Make each section short. During the introduction mention today's date which is ${date} in MM-DD-YYYY format. Do not include any stage directions or segment headers or any flairs in the text like astricks. It should be based on the following three articles: ${combinedText}`,
 					},
 				],
 			});
