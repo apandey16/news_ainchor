@@ -137,8 +137,7 @@ function isValidDisplayDate(dateStr: string): boolean {
 async function handleRequest(env: Env, date?: string) {
   try {
     // Always use DD-MM-YYYY format for display and storage
-    // const displayDate = date && isValidDisplayDate(date) ? date : getCurrentDate();
-    const displayDate = "02-03-2025";
+    const displayDate = date && isValidDisplayDate(date) ? date : getCurrentDate();
     
     // Convert to YYYY-MM-DD only for API calls
     const apiDate = formatDateForApi(displayDate);
