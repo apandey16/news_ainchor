@@ -67,8 +67,12 @@ export async function generateAnchorScript(apiKey: string, texts: string[], date
 				model: MODEL,
 				messages: [
 					{
+						role: 'system',
+						content: `You are a news anchor script generator. When given a date in DD-MM-YYYY format, you must interpret it as: DD is the day, MM is the month number (01-12), and YYYY is the year. For example, "02-03-2025" means March 2nd, 2025 (not February 3rd). Always convert the month number to its name when speaking the date.`
+					},
+					{
 						role: 'user',
-						content: `Generate a news anchor script for a one minute tik-tok style video for an app called NewsAInchor use some humor. Make each section short. During the introduction mention today's date which is ${date} in DD-MM-YYYY format. Do not include any stage directions or segment headers or any flairs in the text like astricks. It should be based on the following three articles: ${combinedText}`,
+						content: `Generate a news anchor script for a one minute tik-tok style video for an app called NewsAInchor use some humor. Make each section short. During the introduction, say the date as a spoken date. For example, if the date is "02-03-2025", you must say "March 2nd, 2025" (not February 3rd). The date to use is: ${date}. Do not include any stage directions or segment headers or any flairs in the text like astricks. It should be based on the following three articles: ${combinedText}`,
 					},
 				],
 			});

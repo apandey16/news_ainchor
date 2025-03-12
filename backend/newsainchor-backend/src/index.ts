@@ -117,7 +117,23 @@ function getCurrentDate(): string {
   // Get current date in Los Angeles (Pacific) time in DD-MM-YYYY format
   const now = new Date();
   const laPacificDate = new Date(now.toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }));
-  return formatDateForDisplay(laPacificDate);
+  
+  // Ensure we're using the correct timezone
+  const options = { timeZone: 'America/Los_Angeles' };
+  const laDate = new Date(laPacificDate.toLocaleString('en-US', options));
+  
+  // Format as DD-MM-YYYY
+  const day = String(laDate.getDate()).padStart(2, '0');
+  const month = String(laDate.getMonth() + 1).padStart(2, '0');
+  const year = laDate.getFullYear();
+  
+  console.log('Current time in Los Angeles:', laDate.toLocaleString('en-US', {
+    timeZone: 'America/Los_Angeles',
+    dateStyle: 'full',
+    timeStyle: 'long'
+  }));
+  
+  return `${day}-${month}-${year}`;
 }
 
 function isValidDisplayDate(dateStr: string): boolean {
