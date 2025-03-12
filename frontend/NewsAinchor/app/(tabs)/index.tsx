@@ -17,7 +17,7 @@ import {useColorScheme} from 'react-native';
       api_token: THE_NEWS_API_KEY as string,
       published_on: today, // Use YYYY-MM-DD format for API
       locale: 'us',
-      limit: 3,
+      limit: 25,
       language: 'en',
     });
   };
