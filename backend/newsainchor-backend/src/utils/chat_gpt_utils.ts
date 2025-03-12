@@ -53,7 +53,11 @@ export async function summarizeText(apiKey: string, text: string): Promise<strin
 }
 
 // Pass in all the summaries and get a news anchor script to pass to Tavus
-export async function generateAnchorScript(apiKey: string, texts: string[], date: string): Promise<string> {
+export async function generateAnchorScript(
+	apiKey: string, 
+	texts: Array<{summary: string, isPolitical: boolean}> | string[], 
+	date: string
+): Promise<string> {
 	const openai = new OpenAI({
 		apiKey: apiKey,
 	});
@@ -62,7 +66,29 @@ export async function generateAnchorScript(apiKey: string, texts: string[], date
 
 	while (attempts < MAX_RETRIES) {
 		try {
-			const combinedText = texts.map((text, index) => `Article ${index + 1}: ${text}`).join('\n');
+			let combinedText;
+			let isPoliticalArray = [];
+			
+			// Handle both the new flagged format and the old string array format for backward compatibility
+			if (typeof texts[0] === 'string') {
+				// Old format - just strings
+				combinedText = (texts as string[]).map((text, index) => `Article ${index + 1}: ${text}`).join('\n');
+				isPoliticalArray = Array(texts.length).fill(false);
+			} else {
+				// New format with political flags
+				combinedText = (texts as Array<{summary: string, isPolitical: boolean}>)
+					.map((item, index) => `Article ${index + 1}: ${item.summary}`)
+					.join('\n');
+				isPoliticalArray = (texts as Array<{summary: string, isPolitical: boolean}>)
+					.map(item => item.isPolitical);
+			}
+			
+			// Create indicators for which articles are political
+			const politicalInfo = isPoliticalArray
+				.map((isPol, idx) => isPol ? `Article ${idx + 1} is POLITICAL. Use a serious tone without humor for this segment.` : '')
+				.filter(Boolean)
+				.join('\n');
+			
 			const completion = await openai.chat.completions.create({
 				model: MODEL,
 				messages: [
@@ -72,7 +98,13 @@ export async function generateAnchorScript(apiKey: string, texts: string[], date
 					},
 					{
 						role: 'user',
-						content: `Generate a news anchor script for a one minute tik-tok style video for an app called NewsAInchor use some humor. Make each section short. During the introduction, say the date as a spoken date. For example, if the date is "02-03-2025", you must say "March 2nd, 2025" (not February 3rd). The date to use is: ${date}. Do not include any stage directions or segment headers or any flairs in the text like astricks. It should be based on the following three articles: ${combinedText}`,
+						content: `Generate a news anchor script for a one minute tik-tok style video for an app called NewsAInchor. Make each section short. During the introduction, say the date as a spoken date. For example, if the date is "02-03-2025", you must say "March 2nd, 2025" (not February 3rd). The date to use is: ${date}.
+
+${politicalInfo ? `IMPORTANT: Some articles are political in nature:\n${politicalInfo}\n\nFor political articles, DO NOT use humor or jokes - maintain a serious, professional tone. For non-political articles, you may use humor.` : 'Use some humor when appropriate.'}
+
+Do not include any stage directions or segment headers or any flairs in the text like asterisks. The script should be based on the following articles:
+
+${combinedText}`,
 					},
 				],
 			});

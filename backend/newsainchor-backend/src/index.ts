@@ -20,6 +20,7 @@ interface ArticleDetails {
   imageUrl: string;
   publisher: string;
   url: string;
+  isPolitical: boolean;
 }
 
 async function writeToDb(key: string, value: string, db: KVNamespace) {
@@ -189,11 +190,45 @@ async function handleRequest(env: Env, date?: string) {
     const topArticlesLst = parsedArticles.data;
     console.log(`Retrieved ${topArticlesLst.length} articles`);
 
-    // 2. Extract article URLs and snippets
-    const articleUrlsAndContext = topArticlesLst.map((article: any) => ({
-      url: article.url,
-      snippet: article.snippet.replace(/\.\.\.$/, '')
-    }));
+    // 2. Extract article URLs and snippets and check for political categories
+    const articleUrlsAndContext = topArticlesLst.map((article: any) => {
+      // Check if the article has categories and if any of them are related to politics
+      const politicalCategories = ['politics', 'government', 'election', 'political'];
+      
+      // The API might return categories as an array of strings or a single comma-separated string
+      let categories: string[] = [];
+      if (article.categories) {
+        if (Array.isArray(article.categories)) {
+          categories = article.categories;
+        } else if (typeof article.categories === 'string') {
+          categories = article.categories.split(',').map((cat: string) => cat.trim());
+        }
+      }
+      
+      // Also check if the title or description contains political keywords
+      const titleAndDesc = `${article.title} ${article.description}`.toLowerCase();
+      const hasPoliticalKeywords = politicalCategories.some(keyword => 
+        titleAndDesc.includes(keyword.toLowerCase())
+      );
+      
+      const isPolitical = 
+        hasPoliticalKeywords || 
+        categories.some(category => 
+          politicalCategories.some(polCat => 
+            category.toLowerCase().includes(polCat)
+          )
+        );
+      
+      if (isPolitical) {
+        console.log(`Article flagged as POLITICAL: ${article.title}`);
+      }
+      
+      return {
+        url: article.url,
+        snippet: article.snippet ? article.snippet.replace(/\.\.\.$/, '') : article.description,
+        isPolitical: isPolitical || false
+      };
+    });
     console.log('Article URLs and snippets:', articleUrlsAndContext);
 
     // 3. Fetch article contents
@@ -245,6 +280,7 @@ async function handleRequest(env: Env, date?: string) {
       imageUrl: article.image_url,
       publisher: article.source,
       url: article.url,
+      isPolitical: articleUrlsAndContext[index]?.isPolitical || false
     }));
 
     // 6. Save to KV
@@ -254,7 +290,14 @@ async function handleRequest(env: Env, date?: string) {
 
     // 7. Generate anchor script
     console.log('Step 5: Generating anchor script');
-    const anchorScript = await chatGPTApiUtils.generateAnchorScript(env.CHAT_API_KEY, articleSummaries, displayDate);
+    
+    // Create an array of article summaries with political flags
+    const flaggedSummaries = articleSummaries.map((summary, index) => ({
+      summary,
+      isPolitical: articleDetails[index].isPolitical
+    }));
+    
+    const anchorScript = await chatGPTApiUtils.generateAnchorScript(env.CHAT_API_KEY, flaggedSummaries, displayDate);
     if (!anchorScript) {
       throw new Error('Failed to generate anchor script');
     }

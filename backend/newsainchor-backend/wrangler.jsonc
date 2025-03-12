@@ -12,7 +12,7 @@
 		"enabled": true
   },
   "triggers": {
-    "crons": ["0 9 * * *"]
+    "crons": ["0 17 * * *"]
   },
   "vars" :{
     "DEEPFAKE_ID": "rdb0fe17e450"
