@@ -8,7 +8,7 @@ const MAX_RETRIES = 5;
 const RETRY_DELAY = 1000; // 1 second delay between retries
 
 // Helper function to wait
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // Pass in the news article and get a summary for it
 export async function summarizeText(apiKey: string, text: string): Promise<string | undefined> {
@@ -22,9 +22,7 @@ export async function summarizeText(apiKey: string, text: string): Promise<strin
 		try {
 			const completion = await openai.chat.completions.create({
 				model: MODEL,
-				messages: [
-					{ role: 'user', content: `Summarize the following news article from today (ignore any HTML artifacts): ${text}` },
-				],
+				messages: [{ role: 'user', content: `Summarize the following news article from today (ignore any HTML artifacts): ${text}` }],
 			});
 
 			const content = completion.choices[0].message.content;
@@ -38,7 +36,7 @@ export async function summarizeText(apiKey: string, text: string): Promise<strin
 			console.error(`Attempt ${attempts} failed:`, {
 				error: error.message,
 				status: error.status,
-				type: error.type
+				type: error.type,
 			});
 
 			if (attempts < MAX_RETRIES) {
@@ -54,9 +52,9 @@ export async function summarizeText(apiKey: string, text: string): Promise<strin
 
 // Pass in all the summaries and get a news anchor script to pass to Tavus
 export async function generateAnchorScript(
-	apiKey: string, 
-	texts: Array<{summary: string, isPolitical: boolean}> | string[], 
-	date: string
+	apiKey: string,
+	texts: Array<{ summary: string; isPolitical: boolean }> | string[],
+	date: string,
 ): Promise<string> {
 	const openai = new OpenAI({
 		apiKey: apiKey,
@@ -68,7 +66,7 @@ export async function generateAnchorScript(
 		try {
 			let combinedText;
 			let isPoliticalArray = [];
-			
+
 			// Handle both the new flagged format and the old string array format for backward compatibility
 			if (typeof texts[0] === 'string') {
 				// Old format - just strings
@@ -76,25 +74,24 @@ export async function generateAnchorScript(
 				isPoliticalArray = Array(texts.length).fill(false);
 			} else {
 				// New format with political flags
-				combinedText = (texts as Array<{summary: string, isPolitical: boolean}>)
+				combinedText = (texts as Array<{ summary: string; isPolitical: boolean }>)
 					.map((item, index) => `Article ${index + 1}: ${item.summary}`)
 					.join('\n');
-				isPoliticalArray = (texts as Array<{summary: string, isPolitical: boolean}>)
-					.map(item => item.isPolitical);
+				isPoliticalArray = (texts as Array<{ summary: string; isPolitical: boolean }>).map((item) => item.isPolitical);
 			}
-			
+
 			// Create indicators for which articles are political
 			const politicalInfo = isPoliticalArray
-				.map((isPol, idx) => isPol ? `Article ${idx + 1} is POLITICAL. Use a serious tone without humor for this segment.` : '')
+				.map((isPol, idx) => (isPol ? `Article ${idx + 1} is POLITICAL. Use a serious tone without humor for this segment.` : ''))
 				.filter(Boolean)
 				.join('\n');
-			
+
 			const completion = await openai.chat.completions.create({
 				model: MODEL,
 				messages: [
 					{
 						role: 'system',
-						content: `You are a news anchor script generator. When given a date in DD-MM-YYYY format, you must interpret it as: DD is the day, MM is the month number (01-12), and YYYY is the year. For example, "02-03-2025" means March 2nd, 2025 (not February 3rd). Always convert the month number to its name when speaking the date.`
+						content: `You are a news anchor script generator. When given a date in DD-MM-YYYY format, you must interpret it as: DD is the day, MM is the month number (01-12), and YYYY is the year. For example, "02-03-2025" means March 2nd, 2025 (not February 3rd). Always convert the month number to its name when speaking the date.`,
 					},
 					{
 						role: 'user',
@@ -120,7 +117,7 @@ ${combinedText}`,
 			console.error(`Attempt ${attempts} failed to generate anchor script:`, {
 				error: error.message,
 				status: error.status,
-				type: error.type
+				type: error.type,
 			});
 
 			if (attempts < MAX_RETRIES) {

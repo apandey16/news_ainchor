@@ -10,7 +10,7 @@ const TAVUS_API_KEY = process.env.TAVUS_API_KEY;
 function createVideoTitle(date?: string, uniqueIdentifier?: string) {
 	// Use the provided date or format current date as DD-MM-YYYY
 	const formattedDate = date ? date.replace(/-/g, '_') : format(new Date(), 'dd_MM_yyyy');
-	
+
 	if (uniqueIdentifier) {
 		return `${formattedDate}_${uniqueIdentifier}`;
 	}
@@ -79,16 +79,13 @@ export async function generateNewsVideo(params: {
 	return apiResponse as generationReturn;
 }
 
-export async function getNewsVideo(params: { videoId: string, apiKey:string }): Promise<VideoGenerationResponse> {
+export async function getNewsVideo(params: { videoId: string; apiKey: string }): Promise<VideoGenerationResponse> {
 	const options = {
 		method: 'GET',
 		headers: { 'x-api-key': `${params.apiKey}` },
 	};
 
-	const apiResponse = await fetch(
-		`https://tavusapi.com/v2/videos/${params.videoId}`,
-		options,
-	)
+	const apiResponse = await fetch(`https://tavusapi.com/v2/videos/${params.videoId}`, options)
 		.then((response) => response.json())
 		.catch((err) => {
 			console.error(err);
