@@ -313,7 +313,7 @@ async function handleRequest(env: Env, date?: string) {
     });
     console.log('Video generation initiated:', videoGenerationResponse);
 
-    // 9. Poll for video completion
+    // 9. Poll for video completion with extended timeout for unbound worker
     console.log('Step 7: Polling for video completion');
     const videoId = videoGenerationResponse.video_id;
     let videoData: tavusUtils.VideoGenerationResponse = {
@@ -331,48 +331,78 @@ async function handleRequest(env: Env, date?: string) {
       generation_progress: '',
     };
 
-    // Check if a video already exists in Tavus with this same name/ID
-    // This helps if a previous run created the video but failed to update the database
-    const maxRetries = 40;
-    const interval = 30000; // 30 seconds
+    // Take advantage of unbound worker with longer poll time
+    const maxRetries = 100; // Increase from 40 to 100 attempts
+    const interval = 15000; // Decrease from 30s to 15s for more frequent checks
     let completed = false;
 
     try {
-      for (let i = 0; i < maxRetries; i++) {
-        console.log(`Checking video status, attempt ${i + 1}/${maxRetries}`);
-        try {
-          videoData = await tavusUtils.getNewsVideo({ apiKey: env.TAVUS_API_KEY, videoId: videoId });
-          console.log('Video status:', videoData.status, 'Progress:', videoData.generation_progress);
-          
-          if (videoData.status === 'ready') {
-            console.log('Video generation completed successfully');
-            completed = true;
-            break;
-          }
-          if (videoData.status === 'failed') {
-            throw new Error(`Video generation failed: ${videoData.status_details}`);
-          }
-        } catch (statusError) {
-          console.error('Error checking video status:', statusError);
-          // Continue polling even if a single status check fails
+      console.log('Starting extended polling loop with unbound worker');
+      
+      // First, check if video already exists from a previous run
+      try {
+        console.log('Checking if video already exists');
+        const existingVideo = await tavusUtils.getNewsVideo({ apiKey: env.TAVUS_API_KEY, videoId: videoId });
+        if (existingVideo && existingVideo.status === 'ready' && existingVideo.stream_url) {
+          console.log('Found existing ready video!');
+          videoData = existingVideo;
+          completed = true;
         }
-        
-        // Wait before the next check
-        await new Promise(resolve => setTimeout(resolve, interval));
+      } catch (existingCheckError) {
+        console.log('No existing video found, continuing with polling');
       }
 
-      // If we didn't explicitly see the video as ready, make one last attempt to fetch it
+      // If no existing video, start polling
       if (!completed) {
-        try {
-          videoData = await tavusUtils.getNewsVideo({ apiKey: env.TAVUS_API_KEY, videoId: videoId });
-          if (videoData.status === 'ready') {
-            console.log('Video generation completed on final check');
-            completed = true;
-          } else {
-            console.log('Final video status check:', videoData.status, 'Progress:', videoData.generation_progress);
+        for (let i = 0; i < maxRetries; i++) {
+          console.log(`Checking video status, attempt ${i + 1}/${maxRetries}`);
+          try {
+            videoData = await tavusUtils.getNewsVideo({ apiKey: env.TAVUS_API_KEY, videoId: videoId });
+            console.log('Video status:', videoData.status, 'Progress:', videoData.generation_progress);
+            
+            if (videoData.status === 'ready') {
+              console.log('Video generation completed successfully');
+              completed = true;
+              break;
+            }
+            if (videoData.status === 'failed') {
+              throw new Error(`Video generation failed: ${videoData.status_details}`);
+            }
+            
+            // For debugging - let's log every 5 attempts
+            if (i % 5 === 0) {
+              console.log(`Still polling... Current progress: ${videoData.generation_progress || 'unknown'}`);
+            }
+          } catch (statusError) {
+            console.error('Error checking video status:', statusError);
+            // Continue polling even if a single status check fails
           }
-        } catch (finalCheckError) {
-          console.error('Error on final video status check:', finalCheckError);
+          
+          // Wait before the next check
+          await new Promise(resolve => setTimeout(resolve, interval));
+        }
+      }
+
+      // If polling completes but we don't have a ready video, make several final attempts
+      if (!completed) {
+        console.log('Polling complete but video not ready, making final attempts');
+        for (let finalAttempt = 0; finalAttempt < 5; finalAttempt++) {
+          try {
+            console.log(`Final attempt ${finalAttempt + 1}/5`);
+            videoData = await tavusUtils.getNewsVideo({ apiKey: env.TAVUS_API_KEY, videoId: videoId });
+            if (videoData.status === 'ready') {
+              console.log('Video generation completed on final attempt');
+              completed = true;
+              break;
+            } else {
+              console.log('Final check status:', videoData.status, 'Progress:', videoData.generation_progress);
+            }
+          } catch (finalCheckError) {
+            console.error(`Error on final check attempt ${finalAttempt + 1}:`, finalCheckError);
+          }
+          
+          // Wait a bit longer between final attempts
+          await new Promise(resolve => setTimeout(resolve, 30000));
         }
       }
 
@@ -408,43 +438,58 @@ async function handleRequest(env: Env, date?: string) {
       }
     }
     
-    // Now save the URL to KV storage
+    // Now save the URL to KV storage with robust retry logic
     console.log('Video URL to save:', videoData.stream_url);
-    try {
-      // Attempt to save the video URL to KV database
-      await writeToDb(displayDate, videoData.stream_url, env.video_date_db);
-      
-      // Verify the video URL was saved correctly with retry logic
-      let savedUrl = null;
-      let verifyAttempts = 0;
-      const maxVerifyAttempts = 3;
-      
-      while (!savedUrl && verifyAttempts < maxVerifyAttempts) {
-        try {
-          savedUrl = await env.video_date_db.get(displayDate);
-          if (savedUrl) {
-            console.log('Video URL saved and verified in video_date_db');
-            break;
-          } else {
-            console.log(`URL verification attempt ${verifyAttempts + 1}/${maxVerifyAttempts} failed, retrying...`);
-            // Small delay before retry
-            await new Promise(resolve => setTimeout(resolve, 1000));
+    let dbWriteSuccess = false;
+    
+    // Multiple attempts to write to database
+    for (let dbAttempt = 0; dbAttempt < 5; dbAttempt++) {
+      try {
+        console.log(`Database write attempt ${dbAttempt + 1}/5`);
+        
+        // Attempt to save the video URL to KV database
+        await writeToDb(displayDate, videoData.stream_url, env.video_date_db);
+        
+        // Verify the write was successful
+        let savedUrl = null;
+        let verifyAttempts = 0;
+        const maxVerifyAttempts = 3;
+        
+        while (!savedUrl && verifyAttempts < maxVerifyAttempts) {
+          try {
+            savedUrl = await env.video_date_db.get(displayDate);
+            if (savedUrl) {
+              console.log('Video URL saved and verified in video_date_db');
+              dbWriteSuccess = true;
+              break;
+            } else {
+              console.log(`URL verification attempt ${verifyAttempts + 1}/${maxVerifyAttempts} failed, retrying...`);
+              // Small delay before retry
+              await new Promise(resolve => setTimeout(resolve, 2000));
+            }
+          } catch (verifyError) {
+            console.error(`Verification attempt ${verifyAttempts + 1} error:`, verifyError);
           }
-        } catch (verifyError) {
-          console.error(`Verification attempt ${verifyAttempts + 1} error:`, verifyError);
+          verifyAttempts++;
         }
-        verifyAttempts++;
+        
+        if (dbWriteSuccess) {
+          console.log('Database write confirmed successful!');
+          break;
+        }
+      } catch (writeError) {
+        console.error(`Database write attempt ${dbAttempt + 1} failed:`, writeError);
+        // Wait before retry
+        await new Promise(resolve => setTimeout(resolve, 3000));
       }
-      
-      if (!savedUrl) {
-        console.error('Video URL could not be verified in KV after multiple attempts');
-        // Don't throw here, as we still want to return success if the video was generated
-      }
-    } catch (error) {
-      console.error('Failed to save video URL:', error);
-      // Don't throw an error here - if the video was generated successfully, 
-      // we want to return success even if DB save failed
-      console.log('Continuing despite database save error - video was generated');
+    }
+    
+    if (!dbWriteSuccess) {
+      console.error('WARNING: Could not verify successful database write after multiple attempts');
+      console.log('Video URL that failed to save:', videoData.stream_url);
+      // Don't throw error, still return success
+    } else {
+      console.log('Database update process completed successfully');
     }
 
     return new Response('Success', { status: 200 });
