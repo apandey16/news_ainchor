@@ -45,7 +45,7 @@ const fetchKVPairVideo = async (key: string): Promise<any | null> => {
     const data = await response.text();
     return data;
   } catch (error) {
-    console.error('Error fetching KV pair:', error);
+    console.error('Missing Key for', key);
     return null;
   }
 };
@@ -113,7 +113,7 @@ const VideoWrapper = ({
         resizeMode="cover"
         volume={1.0}
       />
-      <Overlay isVisible={overlayVisible} onBackdropPress={overlay} fullScreen={false} backdropStyle={{ backgroundColor: 'rgba(0, 0, 0, 0.50)' }} overlayStyle={{ backgroundColor: 'rgba(0, 0, 0, 0.0)', bottom: "-7%" }}>
+      < Overlay isVisible={overlayVisible} onBackdropPress={overlay} fullScreen={false} backdropStyle={{ backgroundColor: 'rgba(0, 0, 0, 0.50)' }} overlayStyle={{ backgroundColor: 'rgba(0, 0, 0, 0.0)', bottom: "-7%" }}>
         <View>
           <View style={{width: "90%", alignSelf: 'center'}}>
             <Text style={$overlayText}>Enjoy The Articles Yourself!</Text>
@@ -174,17 +174,6 @@ export default function HomeScreen() {
     }
   }, [isFocused]);
 
-  let date = moment();
-  let videoDate;
-  if (date.hour() < 10) {
-    date = date.subtract(1, "days");
-  } else {
-    date = date;
-  }
-
-  videoDate = date.format("DD-MM-YYYY");
-
-  let titleDate = date.format("dddd, MMMM Do YYYY");
 
   const [allVideos, setAllVideos] = useState([]);
   const [allArticles, setAllArticles] = useState([]);
@@ -192,19 +181,38 @@ export default function HomeScreen() {
   const [pauseOverride, setPauseOverride] = useState(false);
   const [overlayVisible, setOverlayVisible] = useState(false);
 
+  let date = moment();
+  if (date.hour() < 10) {
+    date = date.subtract(1, "days");
+  } else {
+    date = date;
+  }
+
+  let titleDate = date.format("dddd, MMMM Do YYYY");
+
   useEffect(() => {
     const fetchVideos = async () => {
       if (isFocused) {
         let attempts = 0;
         const maxAttempts = 3;
+        let fetchAttemps = 0;
+
         while (attempts < maxAttempts) {
           try {
-            const result = await fetchKVPairVideo(videoDate);
+            let result = null;
+            while(result === null && fetchAttemps < 3){
+              result = await fetchKVPairVideo(date.format("DD-MM-YYYY"));
+              if (result === null){
+                date = date.subtract(1, "days");
+                fetchAttemps++;
+              }
+            }
             const parsedVideos = JSON.parse(result);
             setAllVideos(parsedVideos);
             break;
           } catch (error) {
             attempts++;
+            date.subtract(1, "days");
             if (attempts >= maxAttempts) {
               console.error('Failed to fetch videos after multiple attempts:', error);
             }
@@ -222,7 +230,7 @@ export default function HomeScreen() {
         const maxAttempts = 3;
         while (attempts < maxAttempts) {
           try {
-            const result = await fetchKVPairArticle(videoDate);
+            const result = await fetchKVPairArticle("10-03-2025");
             const parsedArticles = JSON.parse(result);
             setAllArticles(parsedArticles);
             break;
