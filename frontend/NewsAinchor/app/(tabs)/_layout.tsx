@@ -31,7 +31,7 @@ export default function TabLayout() {
       name="Anchor"
       options={{
         title: 'Anchor',
-        tabBarIcon: ({ color }: { color: string }) => <IconSymbol size={28} name="video.fill" color={color} />,
+        tabBarIcon: ({ color }: { color: string }) => <IconSymbol size={28} name="videocamera.fill" color={color} />,
       }}
       />
       <Tabs.Screen
@@ -45,7 +45,7 @@ export default function TabLayout() {
       name="settings"
       options={{
         title: 'Settings',
-        tabBarIcon: ({ color }: { color: string }) => <IconSymbol size={28} name="gearshape.fill" color={color} />,
+        tabBarIcon: ({ color }: { color: string }) => <IconSymbol size={28} name="settings.fill" color={color} />,
       }}
       />
     </Tabs>

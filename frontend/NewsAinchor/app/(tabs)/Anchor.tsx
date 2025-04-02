@@ -27,6 +27,7 @@ import Cloudflare from 'cloudflare';
 
 import { CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_ARTICLE_NAMESPACE_ID, CLOUDFLARE_VIDEO_NAMESPACE_ID, CLOUDFLARE_EMAIL } from "@env";
 import moment from "moment";
+import { sleep } from "cloudflare/core";
 
 const { height, width } = Dimensions.get("window");
 
@@ -176,7 +177,7 @@ export default function HomeScreen() {
 
 
   const [allVideos, setAllVideos] = useState([]);
-  const [allArticles, setAllArticles] = useState([]);
+  const [allArticles, setAllArticles] = useState(["test articles"]);
   const [visibleIndex, setVisibleIndex] = useState(0);
   const [pauseOverride, setPauseOverride] = useState(false);
   const [overlayVisible, setOverlayVisible] = useState(false);
@@ -208,12 +209,14 @@ export default function HomeScreen() {
               }
             }
             const parsedVideos = JSON.parse(result);
+            console.log('Fetched videos:', parsedVideos);
             setAllVideos(parsedVideos);
             break;
           } catch (error) {
             attempts++;
             date.subtract(1, "days");
             if (attempts >= maxAttempts) {
+              setAllVideos(["https://stream.mux.com/MOGFOKZRI1nGKrcQnnxSYpK2zqrpHZwvCXLpTaZiueE.m3u8"]);
               console.error('Failed to fetch videos after multiple attempts:', error);
             }
           }
@@ -335,7 +338,7 @@ const $overlayContainer: ViewStyle = {
   position: "absolute",
   zIndex: 999,
   elevation: 999,
-  bottom: Platform.OS === "android" ? 70 : 100,
+  bottom: Platform.OS === "android" ? 30 : 50,
   left: 10,
   alignItems: "left",
   gap: 8,
